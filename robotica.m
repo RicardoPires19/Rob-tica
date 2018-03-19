@@ -50,8 +50,8 @@ m4=subs(m3,x4,0);
 m5=subs(m4,x5,pi);   
 m6=subs(m5,x6,0);
 
-rot1=[cos(0) -sin(0) 0;
-    sin(0) cos(0) 0;
+rot1=[cos(x1) -sin(x1) 0;
+    sin(x1) cos(x1) 0;
     0     0      1]
 
 rot2=[cos(-pi/2-pi/3+pi/2) 0 sin(-pi/2-pi/3+pi/2);
@@ -59,12 +59,12 @@ rot2=[cos(-pi/2-pi/3+pi/2) 0 sin(-pi/2-pi/3+pi/2);
     -sin(-pi/2-pi/3+pi/2)   0 cos(-pi/2-pi/3+pi/2)]
 
 rot3=[1  0   0;
-    0 cos(pi) -sin(pi);       
-    0 sin(pi) cos(pi)];
+    0 cos(x4+x6+pi) -sin(x4+x6+pi);       
+    0 sin(x4+x6+pi) cos(x4+x6+pi)];
 
 
-end_point=matrix(:,4)
-rotinv=matrix(1:3,1:3)
+end_point=m6(:,4)
+rotinv=m6(1:3,1:3)
 
 new_end=end_point-25*rotinv(:,3)';   %%posso assumir isto?
 x=new_end(1);
