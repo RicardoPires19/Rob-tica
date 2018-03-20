@@ -44,11 +44,11 @@ rot2=rotz*roty*rotz2;
 
 matrix=R06;
 m1=subs(matrix,x1,0);
-m2=subs(m1,x2,pi/2);   
+m2=subs(m1,x2,0);   
 m3=subs(m2,x3,pi/3);
 m4=subs(m3,x4,0);
-m5=subs(m4,x5,pi);   
-m6=subs(m5,x6,0);
+m5=subs(m4,x5,pi/3);   
+m6=subs(m5,x6,pi/2);
 
 rot1=[cos(x1) -sin(x1) 0;
     sin(x1) cos(x1) 0;
@@ -63,35 +63,43 @@ rot3=[1  0   0;
     0 sin(x4+x6+pi) cos(x4+x6+pi)];
 
 
-end_point=m6(:,4)
+end_point=m6(1:3,4)
 rotinv=m6(1:3,1:3)
 
-new_end=end_point-25*rotinv(:,3)';   %%posso assumir isto?
-x=new_end(1);
-y=new_end(2);
-z=new_end(3);
+new_end=end_point-25*rotinv(:,3);   %%posso assumir isto?
+x=double(new_end(1));
+y=double(new_end(2));
+z=double(new_end(3));
 %calculo para x1 
 x1_1=atan2(y,x);
 x1_2=pi+x1_1;
 
 %calculo para x2=beta-alpha e x3=pi-ang_inte
 %nao esquecer altura base
-hipotenusa=sqrt(x^2+y^2)
-D=(120^2+140^2-hipotenusa)/(2*120*140)
-ang_inte1=acos(D)
-ang_inte2=-acos(D)
-x3_1=pi-ang_inte1;
-x3_2=pi-ang_inte2;
+hipotenusa=sqrt(x^2+y^2+(z-99)^2)
+D=(hipotenusa^2-(120+5)^2-(140+5)^2)/(2*(120+5)*(140+5)) %%falta considerar ate a ponta
+%x3_1=pi-ang_inte1;
+%x3_2=pi-ang_inte2;
+x3_1=-acos(D)
+x3_2=acos(D)
 
-beta=atan2(z-99,sqrt(hipotenusa-(z-99)^2))  %base
-x2_1=beta-atan2(sin(x3_1)*140,120+cos(x3_1)*140)
-x2_2=beta-atan2(sin(x3_2)*140,120+cos(x3_2)*140)
+beta=atan2(z-99,sqrt(hipotenusa^2-(z-99)^2))  %base
+aux=atan2(sin(x3_1)*140,120+cos(x3_1)*140)   %%considerar ponta
+x2_1=beta-aux
+x2_2=beta+aux
 
 %%verificaçoes??
 R03=transf(1:3,1:3,1)*transf(1:3,1:3,2)*transf(1:3,1:3,3);
-subs(R03,x1,x1_1);
-subs(R03,x2,x2_1);   %%%como escolher opçao???
-subs(R03,x3,x3_1);
+R03=subs(R03,x1,x1_1);
+R03=subs(R03,x2,x2_1);   %%%como escolher opçao???
+R03=subs(R03,x3,x3_1);
 
 R36=rotinv*inv(R03);
-%use euler con
+%use euler para ter formula da r36
+
+r36=transf(1:3,1:3,4)*transf(1:3,1:3,5)*transf(1:3,1:3,6)*transf(1:3,1:3,7)
+%%-cos(x5)=R36(2,3)   -cos(pi/2+x4)*sin(x5)=R36(1,3)
+%%sin(x5)*sin(x6)=R36(2,2)
+x5=double(acos(-R36(2,3)))
+x4=double(acos(-R36(1,3)/sin(x5))-pi/2)
+x6=double(asin(R36(2,2)/sin(x5)))
