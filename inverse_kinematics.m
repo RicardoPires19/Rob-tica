@@ -8,7 +8,7 @@ rel=[0   0   99  x1;
     pi/2 0 140   x4;    
     -pi/2  0  0  x5;    %-pi/2
     pi/2 0 0  x6;        %pi/2
-    0 0 25  0]
+    0 0 25  0];
 
 
 for i=1:8
@@ -18,7 +18,7 @@ for i=1:8
         0                           0                            0             1];
 end
 
-R06=transf(:,:,1)*transf(:,:,2)*transf(:,:,3)*transf(:,:,4)*transf(:,:,5)*transf(:,:,6)*transf(:,:,7)*transf(:,:,8)   %0R6
+R06=transf(:,:,1)*transf(:,:,2)*transf(:,:,3)*transf(:,:,4)*transf(:,:,5)*transf(:,:,6)*transf(:,:,7)*transf(:,:,8);   %0R6
 
 
 rotz0=[cos(angz0) -sin(angz0) 0;
@@ -93,13 +93,39 @@ end
 result=[]
 s=size(opc)
 bla=[]
+flag=true;
 for i=1:s(1)
-    R03=transf(1:3,1:3,1)*transf(1:3,1:3,2)*transf(1:3,1:3,3)*transf(1:3,1:3,4);
+     M02=transf(:,:,1)*transf(:,:,2);
     x1=opc(i,1)
-    x2=opc(i,2)      %%falta considerar todas as hipoteses
+    x2=opc(i,2) 
+    M02=double(subs(M02));
+    T02=M02(1:3,4)    %considerar desnivel
+    
+    M03=M02*transf(:,:,3)*transf(:,:,4);
     x3=opc(i,3)
-    R03=double(subs(R03));
-
+    M03=double(subs(M03));
+    R03=M03(1:3,1:3);
+    T03=M03(1:3,4)
+    
+    M04=M03*transf(:,:,5);
+    x4=0;    %posso considerar isto pq x4 so define rotacao
+    M04=double(subs(M04));
+    T04=M04(1:3,4)
+    
+    if flag
+        v=T04-T03;
+        z=(T04(3)-99)/v(3)
+        y=(T04(2)-z*v(2))
+        x=(T04(1)-z*v(1))
+        if (x-30<T02(1) && T02(1)<x+30) || (y-30<T02(2) && T02(2)<y+30)
+            flag=false;
+            msgbox('elbow singularity')
+        end
+        if -0.5<T04(1) && T04(1)<0.5 && -0.5<T04(2) && T04(2)<0.5
+            flag=false;
+            msgbox('shoulder singularity')
+        end
+    end
     R36=double(R03.'*rotinv);
     
     x5=atan2(sqrt(R36(1,3)^2+R36(3,3)^2),-R36(2,3));
@@ -118,4 +144,10 @@ for i=1:s(1)
     if Rfinal(1,4)<x+1 && Rfinal(1,4)>x-1 && Rfinal(2,4)<y+1 && Rfinal(2,4)>y-1 && Rfinal(3,4)<z+1 && Rfinal(3,4)>z-1 
         result=[result; x1 x2 x3 x4 x5 x6];
     end
-end
+    if flag
+        if (x5>pi/2-0.01 && x5<pi/2+0.01) || (x5>-pi/2-0.01 && x5<-pi/2+0.01)
+            flag=false;
+            msgbox('wrist singularity')
+        end
+    end
+end    
