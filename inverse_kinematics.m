@@ -101,23 +101,23 @@ for i=1:s(1)
     M02=double(subs(M02));
     T02=M02(1:3,4)    %considerar desnivel
     
-    M03=M02*transf(:,:,3)*transf(:,:,4);
+    M03=M02*transf(:,:,3);
     x3=opc(i,3)
     M03=double(subs(M03));
     R03=M03(1:3,1:3);
     T03=M03(1:3,4)
     
-    M04=M03*transf(:,:,5);
+    M04=M03*transf(:,:,4)*transf(:,:,5);
     x4=0;    %posso considerar isto pq x4 so define rotacao
     M04=double(subs(M04));
     T04=M04(1:3,4)
     
     if flag
-        v=T04-T03;
-        z=(T04(3)-99)/v(3)
-        y=(T04(2)-z*v(2))
-        x=(T04(1)-z*v(1))
-        if (x-30<T02(1) && T02(1)<x+30) || (y-30<T02(2) && T02(2)<y+30)
+        v=T03-T02;
+        yy=(T03(2)-T04(2))/v(2)
+        zz=(T03(3)-yy*v(3))
+        xx=(T03(1)-yy*v(1))
+        if (xx-30<T04(1) && T04(1)<xx+30) && (zz-30<T04(3) && T04(3)<zz+30)
             flag=false;
             msgbox('elbow singularity')
         end
