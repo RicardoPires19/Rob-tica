@@ -2,8 +2,9 @@
 %pioneer_init(sp);
 
 pioneer_set_controls(sp,100,0);
+a=pioneer_read_sonars();
 
-while a(4)>500 && a(5)>500
+while ~(a(1)<800 && a(8)>4000)
     tic;
     tStart=tic;
     points=[];
@@ -22,14 +23,22 @@ while a(4)>500 && a(5)>500
         dist=a(1);
      %v=0
     end
-     fprintf('fora ciclo diagonal é %f',diag,'com angulo %f\n',ang, 'var dist esta a %f\n',dist) )
+    fprintf('fora ciclo diagonal é %f',diag,'com angulo %f',ang, 'var dist esta a %f\n',dist)
     pause(0.2)
-     while dist>230 && dist<700
+    while dist>330 && dist<600
         if toc(tStart)/4>=iter
              t=toc(tStart);
              a=pioneer_read_sonars();
-             points=[points;a(1)*10^-3];    %%esta em metros certo?
-             time=[time;t];
+             if length(points)>0
+                 if a(1)-points(length(points))*1000<200
+                    points=[points;a(1)*10^-3];    %%esta em metros certo?
+                    time=[time;t];
+                    fprintf('nao porta')
+                 end
+             else
+                 points=[points;a(1)*10^-3];    %%esta em metros certo?
+                 time=[time;t];
+             end
              iter=iter+1;
              pause(0.4);
              
@@ -47,11 +56,12 @@ while a(4)>500 && a(5)>500
              fprintf('valor dist %f e angulo %f na iteracao %d\n',dist,ang, iter)
          end
        
-        if length(points)>2 && (points(length(points))- points(length(points)-1))>0.15
-            fprintf('break');
-            break;
-        end
-     end
+        %if length(points)>2 && (points(length(points))- points(length(points)-1))>0.15
+        %    fprintf('break\n');
+        %    break;
+        %end
+    end
+    fprintf('off')
     if length(time)>0
         [f, n] = polyfit(time, points, 1);
         %angle = atan( f(1) + f(2) );
@@ -68,21 +78,25 @@ while a(4)>500 && a(5)>500
         angle = rad2deg(angle);
         v=angle/time(length(time));
         if ( f(1) > 0)
-            v=-v;
+            v=v;
         else 
-            v=v;  %dps tirar redundante
+            v=-v;  %dps tirar redundante
         end
         t=time(length(time));
 
-        tStart=tic;
+        %tStart=tic;
         pioneer_set_controls(sp,100,round(v));
-        fprintf('valor velocidade %f\n aplicada durante %f tempo',v,t)
-        pause(t)   %%pode necessitar de ajuste t esta em sec
-        fprintf('fim correcao')
+        fprintf('valor velocidade %f aplicada durante %f tempo\n',v,t)
+        pause(5)   %%pode necessitar de ajuste t esta em sec
+        fprintf('fim correcao\n')
         %if toc(tStart)>0.07
-            pioneer_set_controls(sp,100,0);
+        pioneer_set_controls(sp,100,-round(v));
+        pause(2.5)
 %             fprintf('sidfniasou');
+        pioneer_set_controls(sp,100,0);
 %         end
     end
 end
+a(7)
+fprintf('saiu')
 pioneer_set_controls(sp,0,0)
