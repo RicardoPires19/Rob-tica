@@ -3,14 +3,16 @@
 
 pioneer_set_controls(sp,100,0);
 a=pioneer_read_sonars();
-
-while ~(a(1)<800 && a(8)>4000)
-    tic;
-    tStart=tic;
+b=pioneer_read_odometry();
+num_voltas=1;
+while a(4)>200   %~(a(1)<800 && a(8)>4000)
+    b=pioneer_read_odometry();
+    pos=1;
     points=[];
     iter=1;
     time=[];
     t=0;
+    last_odom=0;
     %%n esquecer mudar
     a=pioneer_read_sonars();
     diag=280+a(1)+a(8);
@@ -23,13 +25,15 @@ while ~(a(1)<800 && a(8)>4000)
         dist=a(1);
      %v=0
     end
-    fprintf('fora ciclo diagonal é %f',diag,'com angulo %f',ang, 'var dist esta a %f\n',dist)
+    fprintf('fora ciclo diagonal é %f com angulo %f var dist esta a %f\n \n',diag,ang,dist)
     pause(0.2)
-    while dist>330 && dist<600
-        if toc(tStart)/4>=iter
+    tStart=tic;
+    while true
+        b=pioneer_read_odometry();
+        if toc(tStart)/2>=iter
              t=toc(tStart);
              a=pioneer_read_sonars();
-             if length(points)>0
+             if ~isempty(points)
                  if a(1)-points(length(points))*1000<200
                     points=[points;a(1)*10^-3];    %%esta em metros certo?
                     time=[time;t];
@@ -45,6 +49,8 @@ while ~(a(1)<800 && a(8)>4000)
              %mudarrrrrrrrrrrrrrrrrrrr
              if a(8)~=5000    %ultimo corredor
                 diag=280+a(1)+a(8);
+                
+                fprintf('valores medidos %d %d \n',a(1),a(8))
                 ang=acos(cor/diag);
                 ang=real(ang);
                 if ang~=0
@@ -53,6 +59,41 @@ while ~(a(1)<800 && a(8)>4000)
                     dist=a(1);
                 end
              end
+             if ((dist>500 || dist<330) && length(points)>1) || (abs(b(pos))>10000+last_odom && length(points)>3)
+                 break;
+             end
+             
+             while abs(b(pos))>10500+last_odom
+                 a=pioneer_read_sonars();
+                 if a(4)<1200 || a(5)<1200 || a(8)>2000
+                    
+                     pioneer_set_controls(sp, 100, -5);
+                     pause(15.5)
+                     pioneer_set_controls(sp, 100, 0);
+                     points=[];
+                     time=[];
+                     t=0;
+                     b=pioneer_read_odometry();
+                     if num_voltas==1 || num_voltas==3
+                        last_odom=abs(b(2));
+                        num_voltas=num_voltas+1;
+                        pos=2;
+                        if num_voltas==3
+                            last_odom=-last_odom;
+                        end
+                     else
+                        last_odom=abs(b(1));
+                        num_voltas=num_voltas+1;
+                        pos=1;
+                        if num_voltas==4
+                            last_odom=-last_odom;
+                        end
+                     end
+                 end
+                 break;
+             end
+             
+             
              fprintf('valor dist %f e angulo %f na iteracao %d\n',dist,ang, iter)
          end
        
@@ -87,11 +128,11 @@ while ~(a(1)<800 && a(8)>4000)
         %tStart=tic;
         pioneer_set_controls(sp,100,round(v));
         fprintf('valor velocidade %f aplicada durante %f tempo\n',v,t)
-        pause(5)   %%pode necessitar de ajuste t esta em sec
+        pause(t/4)   %%pode necessitar de ajuste t esta em sec
         fprintf('fim correcao\n')
         %if toc(tStart)>0.07
         pioneer_set_controls(sp,100,-round(v));
-        pause(2.5)
+        pause(t/8)
 %             fprintf('sidfniasou');
         pioneer_set_controls(sp,100,0);
 %         end
