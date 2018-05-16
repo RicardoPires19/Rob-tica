@@ -5,6 +5,7 @@ pioneer_set_controls(sp,100,0);
 a=pioneer_read_sonars();
 b=pioneer_read_odometry();
 num_voltas=1;
+last_odom=0;
 while a(4)>200   %~(a(1)<800 && a(8)>4000)
     b=pioneer_read_odometry();
     pos=1;
@@ -12,7 +13,7 @@ while a(4)>200   %~(a(1)<800 && a(8)>4000)
     iter=1;
     time=[];
     t=0;
-    last_odom=0;
+    
     %%n esquecer mudar
     a=pioneer_read_sonars();
     diag=280+a(1)+a(8);
@@ -59,14 +60,15 @@ while a(4)>200   %~(a(1)<800 && a(8)>4000)
                     dist=a(1);
                 end
              end
-             if ((dist>500 || dist<330) && length(points)>1) || (abs(b(pos))>10000+last_odom && length(points)>3)
+             if ((dist>500 || dist<330) && length(points)>1) || (abs(b(pos))>9500+last_odom && length(points)>3)
                  break;
              end
              
-             while abs(b(pos))>10500+last_odom
+             while abs(b(pos))>10000+last_odom
                  a=pioneer_read_sonars();
-                 if a(4)<1200 || a(5)<1200 || a(8)>2000
-                    
+                 fprintf('4: %d 5: %d 8: %d', a(4), a(5), a(8))
+                 if a(4)<1400 || a(5)<1400 || a(8)>1300
+                    fprintf('curvaaaaaa')
                      pioneer_set_controls(sp, 100, -5);
                      pause(15.5)
                      pioneer_set_controls(sp, 100, 0);
@@ -103,7 +105,7 @@ while a(4)>200   %~(a(1)<800 && a(8)>4000)
         %end
     end
     fprintf('off')
-    if length(time)>0
+    if ~isempty(time)
         [f, n] = polyfit(time, points, 1);
         %angle = atan( f(1) + f(2) );
         %angle = rad2deg(angle);
