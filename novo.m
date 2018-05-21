@@ -124,7 +124,7 @@ while a(4)>200   %~(a(1)<800 && a(8)>4000)
                         b=pioneer_read_odometry();
                         if num_voltas==1
                             last_odom=b(2);
-                            value=11500+abs(last_odom);
+                            value=11500+abs(last_odom)+500;
                             pos=2;
                         end
                         if num_voltas==2
@@ -147,9 +147,10 @@ while a(4)>200   %~(a(1)<800 && a(8)>4000)
                     end
                     
                 end
-                if ~flag
-                    break;
-                end
+                
+            end
+            if ~flag
+                break;
             end
             
             
@@ -187,7 +188,7 @@ while a(4)>200   %~(a(1)<800 && a(8)>4000)
             
             %tStart=tic;
             fprintf('dist antes ciclo %f \n', dist)
-            while dist>480 || dist<330
+            while dist>450 || dist<330
                 b=pioneer_read_odometry();
                 %                 if abs(b(pos))>value
                 %                     break;
@@ -220,32 +221,27 @@ while a(4)>200   %~(a(1)<800 && a(8)>4000)
                 cont=0
                 stop=tic;
                 c=0;
-                while abs(c-0.8727)>0.1 || cont==0 || toc(stop)<t/4  % || toc(stop)<4
+                while abs(c-0.8727)>0.1 || cont==0 || toc(stop)<3  % || toc(stop)<4
                     cont=1;
-                    pioneer_set_controls(sp,100,-ceil(v));
-                    if a(1)>4500 || a(2)>4500
-                        fprintf('sensores na merda')
-                        if v>0
-                            pioneer_set_controls(sp,100,-5);
-                        else
-                            pioneer_set_controls(sp,100,5);
-                        end
-                        pause(1)
- %                       while dist<450
+%                     pioneer_set_controls(sp,100,-ceil(v));
+%                     if a(1)>4500 || a(2)>4500
+%                         fprintf('sensores na merda')
+%                         pioneer_set_controls(sp,100,-abs(ceil(v)));
+%                         while dist>450
 %                             fprintf('continua a andar dist = %3.2f \n', dist)
 %                             a=pioneer_read_sonars();
-%                             d=a(8)^2+a(7)^2-2*a(8)*a(7)*cos(0.7);
-%                             c=(a(7)^2+a(8)^2-d)/(2*sqrt(d)*a(8));
+%                             d=a(1)^2+a(2)^2-2*a(1)*a(2)*cos(0.7);
+%                             c=(a(2)^2+a(1)^2-d)/(2*sqrt(d)*a(1));
 %                             angle=pi-c;
-%                             dist=sin(angle)*a(8);
-%                        end
-                        break;
-                            
-                    end
+%                             dist=sin(angle)*a(1);
+%                         end
+%                         break;
+%                             
+%                     end
                     pause(0.1)
-%                     a=pioneer_read_sonars();
-%                     d=a(1)^2+a(2)^2-2*a(1)*a(2)*cos(0.7);
-%                     c=(a(2)^2+a(1)^2-d)/(2*sqrt(d)*a(1));
+                    a=pioneer_read_sonars();
+                    d=a(1)^2+a(2)^2-2*a(1)*a(2)*cos(0.7);
+                    c=(a(2)^2+a(1)^2-d)/(2*sqrt(d)*a(1));
                     %                         if c>1
                     %                             pioneer_set_controls(sp,100,ceil(v));
                     %                         end
@@ -258,16 +254,23 @@ while a(4)>200   %~(a(1)<800 && a(8)>4000)
                     c=(a(2)^2+a(1)^2-d)/(2*sqrt(d)*a(1));
                     angle=pi-c;
                     dist=sin(angle)*a(1);
-                    if dist>500 || dist<300
+                    if dist>450 || dist<300
+                        pioneer_set_controls(sp,100,-ceil(v));
+                        pause(4)
                         pioneer_set_controls(sp,100,ceil(v));
-                        pause(3)
+                        pause(2)
+                        stop=tic;
+                        
                     end
-                    if toc(stop)>t/4
+                    if toc(stop)>3
                         fprintf('demasiado tempo a endireitar')
                         break;
                     end
-                    
-                    
+                    b=pioneer_read_odometry()
+                    if abs(b(pos))>value-1000
+                        break;
+                    end
+
                     fprintf('fim endireitar angulo %f \n', c)
                 end
                 b=pioneer_read_odometry()
