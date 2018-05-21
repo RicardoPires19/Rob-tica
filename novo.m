@@ -20,8 +20,8 @@ while a(4)>200   %~(a(1)<800 && a(8)>4000)
     a=pioneer_read_sonars();
     d=a(1)^2+a(2)^2-2*a(1)*a(2)*cos(0.7);
     c=(a(2)^2+a(1)^2-d)/(2*sqrt(d)*a(1));
-    angle=pi-c;
-    dist=sin(angle)*a(1);
+    ang=pi-c;
+    dist=sin(ang)*a(1);
     fprintf('nova distancia %d \n',dist)
     
     %%n esquecer mudar
@@ -37,7 +37,7 @@ while a(4)>200   %~(a(1)<800 && a(8)>4000)
     %      %v=0
     %     end
     %     fprintf('distancia actual %d \n',dist)
-    fprintf('fora ciclo diagonal é %f com angulo %f var dist esta a %f\n \n',diag,ang,dist)
+    fprintf('fora ciclo com angulo %f var dist esta a %f \n', ang, dist)
     pause(0.2)
     tStart=tic;
     while true
@@ -48,7 +48,7 @@ while a(4)>200   %~(a(1)<800 && a(8)>4000)
                 if a(1)-points(length(points))*1000<200
                     points=[points;a(1)*10^-3];    %%esta em metros certo?
                     time=[time;t];
-                    fprintf('nao porta')
+                    fprintf('nao porta\n')
                 end
             else
                 points=[points;a(1)*10^-3];    %%esta em metros certo?
@@ -76,7 +76,7 @@ while a(4)>200   %~(a(1)<800 && a(8)>4000)
             c=(a(2)^2+a(1)^2-d)/(2*sqrt(d)*a(1));
             angle=pi-c;
             dist=sin(angle)*a(1);
-            fprintf('nova distancia %d \n',dist)
+            fprintf('nova distancia %d , points.length %d \n',dist, length(points))
             b=pioneer_read_odometry();
             fprintf('odometry %d %d \n', b(1), b(2) )
             
@@ -111,10 +111,10 @@ while a(4)>200   %~(a(1)<800 && a(8)>4000)
                 %                          break;
                 %                      end
                 %                  end
-                fprintf('entrouuuuuuuuuuu')
+                fprintf('entrouuuuuuuuuuu\n')
                 if abs(b(pos))>value+500
                     if a(4)<1500 || a(5)<3300
-                        fprintf('curvaaaaaa')
+                        fprintf('curvaaaaaa\n')
                         pioneer_set_controls(sp, 100, -7);
                         pause(11.5)
                         pioneer_set_controls(sp, 100, 0);
@@ -145,9 +145,10 @@ while a(4)>200   %~(a(1)<800 && a(8)>4000)
                         flag=false;
                         corrigido=true;
                     end
-                    if ~flag
-                        break;
-                    end
+                    
+                end
+                if ~flag
+                    break;
                 end
             end
             
@@ -185,6 +186,7 @@ while a(4)>200   %~(a(1)<800 && a(8)>4000)
             t=time(length(time));
             
             %tStart=tic;
+            fprintf('dist antes ciclo %f \n', dist)
             while dist>480 || dist<330
                 b=pioneer_read_odometry();
                 %                 if abs(b(pos))>value
@@ -221,12 +223,21 @@ while a(4)>200   %~(a(1)<800 && a(8)>4000)
                 while abs(c-0.8727)>0.1 || cont==0 || toc(stop)<t/4  % || toc(stop)<4
                     cont=1;
                     pioneer_set_controls(sp,100,-ceil(v));
-%                     if a(1)>4500 || a(2)>4500
-%                         fprintf('sensores na merda')
-%                         pioneer_set_controls(sp,100,-ceil(v));
-%                         pause(1)
-%                     end
-                    %pause(0.1)
+                    if a(1)>4500 || a(2)>4500
+                        fprintf('sensores na merda')
+                        pioneer_set_controls(sp,100,-abs(ceil(v)));
+                        while dist>450
+                            fprintf('continua a andar dist = %3.2f \n', dist)
+                            a=pioneer_read_sonars();
+                            d=a(1)^2+a(2)^2-2*a(1)*a(2)*cos(0.7);
+                            c=(a(2)^2+a(1)^2-d)/(2*sqrt(d)*a(1));
+                            angle=pi-c;
+                            dist=sin(angle)*a(1);
+                        end
+                        break;
+                            
+                    end
+                    pause(0.1)
                     a=pioneer_read_sonars();
                     d=a(1)^2+a(2)^2-2*a(1)*a(2)*cos(0.7);
                     c=(a(2)^2+a(1)^2-d)/(2*sqrt(d)*a(1));
@@ -282,9 +293,9 @@ while a(4)>200   %~(a(1)<800 && a(8)>4000)
         dist=sin(angle)*a(1);
         if a(1)>4500 || a(2)>4500
              while dist>400
-                pioneer_set_controls(sp,100,round(8));
+                pioneer_set_controls(sp,100,round(5));
                 pause(2)
-                pioneer_set_controls(sp,100,round(-8));
+                pioneer_set_controls(sp,100,round(-5));
                 pause(1)
                 pioneer_set_controls(sp,100,0);
                 a=pioneer_read_sonars();
@@ -293,6 +304,11 @@ while a(4)>200   %~(a(1)<800 && a(8)>4000)
                 angle=pi-c;
                 dist=sin(angle)*a(1);
              end
+             while abs(c-0.8727)>0.1
+                a=pioneer_read_sonars();
+                d=a(1)^2+a(2)^2-2*a(1)*a(2)*cos(0.7);
+                c=(a(2)^2+a(1)^2-d)/(2*sqrt(d)*a(1));
+             end 
              fprintf('fim endireitar dps da curvaaaaaaaa\n')
              pioneer_set_controls(sp,100,0);
             flag=true;
