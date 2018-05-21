@@ -124,7 +124,7 @@ while a(4)>200   %~(a(1)<800 && a(8)>4000)
                         b=pioneer_read_odometry();
                         if num_voltas==1
                             last_odom=b(2);
-                            value=11500+abs(last_odom)+500;
+                            value=11500+abs(last_odom);
                             pos=2;
                         end
                         if num_voltas==2
@@ -225,22 +225,27 @@ while a(4)>200   %~(a(1)<800 && a(8)>4000)
                     pioneer_set_controls(sp,100,-ceil(v));
                     if a(1)>4500 || a(2)>4500
                         fprintf('sensores na merda')
-                        pioneer_set_controls(sp,100,-abs(ceil(v)));
-                        while dist>450
-                            fprintf('continua a andar dist = %3.2f \n', dist)
-                            a=pioneer_read_sonars();
-                            d=a(1)^2+a(2)^2-2*a(1)*a(2)*cos(0.7);
-                            c=(a(2)^2+a(1)^2-d)/(2*sqrt(d)*a(1));
-                            angle=pi-c;
-                            dist=sin(angle)*a(1);
+                        if v>0
+                            pioneer_set_controls(sp,100,-5);
+                        else
+                            pioneer_set_controls(sp,100,5);
                         end
+                        pause(1)
+ %                       while dist<450
+%                             fprintf('continua a andar dist = %3.2f \n', dist)
+%                             a=pioneer_read_sonars();
+%                             d=a(8)^2+a(7)^2-2*a(8)*a(7)*cos(0.7);
+%                             c=(a(7)^2+a(8)^2-d)/(2*sqrt(d)*a(8));
+%                             angle=pi-c;
+%                             dist=sin(angle)*a(8);
+%                        end
                         break;
                             
                     end
                     pause(0.1)
-                    a=pioneer_read_sonars();
-                    d=a(1)^2+a(2)^2-2*a(1)*a(2)*cos(0.7);
-                    c=(a(2)^2+a(1)^2-d)/(2*sqrt(d)*a(1));
+%                     a=pioneer_read_sonars();
+%                     d=a(1)^2+a(2)^2-2*a(1)*a(2)*cos(0.7);
+%                     c=(a(2)^2+a(1)^2-d)/(2*sqrt(d)*a(1));
                     %                         if c>1
                     %                             pioneer_set_controls(sp,100,ceil(v));
                     %                         end
@@ -254,8 +259,8 @@ while a(4)>200   %~(a(1)<800 && a(8)>4000)
                     angle=pi-c;
                     dist=sin(angle)*a(1);
                     if dist>500 || dist<300
-                        pause(1)
-                        break;
+                        pioneer_set_controls(sp,100,ceil(v));
+                        pause(3)
                     end
                     if toc(stop)>t/4
                         fprintf('demasiado tempo a endireitar')
