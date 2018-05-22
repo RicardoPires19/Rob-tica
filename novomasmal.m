@@ -32,12 +32,10 @@ while a(4)>200
 %         if toc(tStart)/2>=iter
             t=toc(tStart);
             a=pioneer_read_sonars();
-            if a(1)>900
-                fprintf('portaaaaaaaaaaaaaa')
-                continue;
-            end
-            if length(points)>40
-                if abs(mean(points)-a(1)*10^-3)<500*10^-3
+            
+           
+            if length(points)>30
+                if abs(mean(points)-a(1)*10^-3)<600*10^-3
                     points=[points;a(1)*10^-3];    %%esta em metros certo?
                     time=[time;t];
                     fprintf('nao porta\n')
@@ -46,7 +44,7 @@ while a(4)>200
                 points=[points;a(1)*10^-3];    %%esta em metros certo?
                 time=[time;t];
                 fprintf('add point')
-             end
+            end
             iter=iter+1;
             pause(0.2);
    
@@ -59,7 +57,7 @@ while a(4)>200
             b=pioneer_read_odometry();
             fprintf('odometry %d %d \n', b(1), b(2) )
             
-            if length(points)>50
+            if length(points)>30
                 if abs(b(pos))>value
                     fprintf('ultima correcao \n')
                     break;
@@ -68,7 +66,7 @@ while a(4)>200
                     fprintf('fora de limites \n')
                     break;
                 end
-                if dist<250 && (points(length(points))<points(length(points)-1))
+                if dist<280 && (points(length(points))<points(length(points)-1))
                     fprintf('fora de limites \n')
                     break;
                 end
@@ -78,7 +76,6 @@ while a(4)>200
                 a=pioneer_read_sonars();
                 b=pioneer_read_odometry();
                 
-                fprintf('entrouuuuuuuuuuu\n')
                 if abs(b(pos))>value+500
                     if a(4)<1400 || a(5)<1600
                         fprintf('curvaaaaaa\n')
@@ -148,30 +145,33 @@ while a(4)>200
             angle = rad2deg(angle);
             v=angle/time(length(time));
             if ( f(1) > 0)
-                v=v;
+                v=1;
             else
-                v=-v;  %dps tirar redundante
+                v=-1;  %dps tirar redundante
             end
             t=time(length(time));
             
             %tStart=tic;
             fprintf('dist antes ciclo %f \n', dist)
             tempo=tic;
-            while dist>250 || dist<500
-                b=pioneer_read_odometry();
+            while dist<350 || dist>400
                 %                 if abs(b(pos))>value
                 %                     break;
                 %                 end
+                b=pioneer_read_odometry();
+                if abs(b(pos))>value-500
+                    break;
+                end
                 fprintf('dist %d \n', dist)
                 a=pioneer_read_sonars();
                 d=a(1)^2+a(2)^2-2*a(1)*a(2)*cos(0.7);
                 c=(a(2)^2+a(1)^2-d)/(2*sqrt(d)*a(1));
                 angle=pi-c;
                 dist=sin(angle)*a(1);
-                if v<0
+                if dist<350
                     pioneer_set_controls(sp,150,-ceil(abs(v)));
                 else
-                    pioneer_set_controls(sp,150,-ceil(v));
+                    pioneer_set_controls(sp,150,ceil(abs(v)));
                 end
                 %fprintf('valor velocidade %f aplicada durante %f tempo\n',v,t)
                 %                 if t<20
@@ -228,16 +228,16 @@ while a(4)>200
             dist=sin(angle)*a(1);
             tempo=tic;
             fprintf('antes de entrar %f %f %f \n', a(1),a(2),c)
-            while (a(1)>4500 && a(2)>4500) || abs(c-0.8727)>0.06
+            while (a(1)>4500 && a(2)>4500) || abs(c-0.8727)>0.02
                 if v<0
-                    pioneer_set_controls(sp,150,ceil(abs(v))/2);
+                    pioneer_set_controls(sp,150,ceil(abs(v)));
                     pause(1)
 %                         pioneer_set_controls(sp,100,-ceil(abs(v)));
 %                         pause(1.5)
 %                         stop=tic;
                     fprintf('distancia %d endireitar para centro \n ', dist)
                 else
-                    pioneer_set_controls(sp,150,-ceil(v)/2);
+                    pioneer_set_controls(sp,150,-ceil(v));
                     pause(1)
 %                         pioneer_set_controls(sp,100,ceil(v));
 %                         pause(1.5)
@@ -254,8 +254,9 @@ while a(4)>200
                     fprintf('demasiado tempo a endireitar')
                     break;
                 end
-                b=pioneer_read_odometry()
-                if abs(b(pos))>value-1000
+                b=pioneer_read_odometry();
+                if abs(b(pos))>value-500 && abs(c-0.8727)>0.1
+                    fprintf('curva durante o endireitar')
                     break;
                 end
 
@@ -281,17 +282,18 @@ while a(4)>200
            pioneer_set_controls(sp,150,0);
         end
     else
+        pause(1)
         a=pioneer_read_sonars();
         
         d=a(1)^2+a(2)^2-2*a(1)*a(2)*cos(0.7);
         c=(a(2)^2+a(1)^2-d)/(2*sqrt(d)*a(1));
         angle=pi-c;
         dist=sin(angle)*a(1);
-        fprintf('dist dps da curva',dist);
-         while dist>400
-            pioneer_set_controls(sp,100,round(5));
+        fprintf('dist 3.3%f dps da curva',dist);
+        while dist>400
+            pioneer_set_controls(sp,100,round(1));
             pause(2)
-            pioneer_set_controls(sp,100,round(-5));
+            pioneer_set_controls(sp,100,round(-1));
             pause(1)
             pioneer_set_controls(sp,100,0);
             a=pioneer_read_sonars();
@@ -299,8 +301,10 @@ while a(4)>200
             c=(a(2)^2+a(1)^2-d)/(2*sqrt(d)*a(1));
             angle=pi-c;
             dist=sin(angle)*a(1);
+            fprintf('distancia ao endireitar dps da curva %f\n', dist)
          end
          while abs(c-0.8727)>0.1
+            fprintf('inicio endireitar dentro dos limites')
             a=pioneer_read_sonars();
             d=a(1)^2+a(2)^2-2*a(1)*a(2)*cos(0.7);
             c=(a(2)^2+a(1)^2-d)/(2*sqrt(d)*a(1));
