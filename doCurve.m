@@ -1,4 +1,4 @@
-function [] = doCurve(sp)
+function [] = doCurve(sp, c)
 
 a = pioneer_read_sonars();
 t = 0;
@@ -10,6 +10,12 @@ elseif(a(1) > 600)
 else
     w = -14;
 end
+
+if abs(c-0.8727)>0.15
+    w = w - 2;
+if abs(c-0.8727)>0.05
+    w = w - 1;
+end    
 
 pioneer_set_controls(sp, 250, w);
 
