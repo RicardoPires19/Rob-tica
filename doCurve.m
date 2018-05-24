@@ -3,24 +3,36 @@ function [] = doCurve(sp, c)
 a = pioneer_read_sonars();
 t = 0;
 a(1)
+
 if(a(1) < 250)
-    w = -11; t=2.5;
+    w = -12; t=2.5;
 elseif(a(1) > 600)
-    w = -13; t = 0.5;
+    w = -13; 
 else
     w = -14;
 end
 
-if abs(c-0.8727)>0.15
-    w = w - 2;
-if abs(c-0.8727)>0.05
-    w = w - 1;
-end    
+% if c-0.8727<-0.2
+%     w = w + 2;
+% elseif c-0.8727<-0.1
+%     w = w + 1;
+% elseif c-0.8727>0.2
+%     w = w - 2;
+% elseif c-0.8727>0.1
+%     w = w - 1;
+% end
+fprintf('c = %f | conta = %f a(1) = %f\n', c, c-0.8727, a(1))
+fprintf('w = %f\n', w);
 
 pioneer_set_controls(sp, 250, w);
-
-pause(6+t)
-
+pause(5.5)
+% tic=start
+% 
+% while true
+%     a=pioneer_read_sonars();
+%     fprintf('sensores na curva %f %f \n',a(7),a(8) );
+% 
+% end
 pioneer_set_controls(sp, 250, 0);
 
 pause(0.5)
