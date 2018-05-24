@@ -213,7 +213,7 @@ while a(4)>200
                 v=abs(v);
                 pioneer_set_controls(sp,ROBOT_VELOCITY_WHILE_FIXING,v);
             end
-            fprintf('FIM DA CORRE«√O: [ANGLE] %f  [DISTANCE] %f\n',ang, dist)
+            fprintf('FIM DA CORRE√á√ÉO: [ANGLE] %f  [DISTANCE] %f\n',ang, dist)
             stop=tic;
         end
         max=toc(tempo);
