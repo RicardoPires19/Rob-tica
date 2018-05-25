@@ -25,8 +25,17 @@ points=[];
 volta_correcao=true;
 tira_medidas=true;
 ROBOT_VELOCITY_WHILE_FIXING = 250;
+
+pioneer_set_controls(sp, 250, 0);
+pause(4)
+pioneer_set_controls(sp, 250, 16);
+pause(5.35)
+pioneer_set_controls(sp, 250, 0);
+pause(14)
+
 tic;
-while a(4)>200
+while true 
+
     fprintf('begin\n')
     b=pioneer_read_odometry();
     points=[];
@@ -55,7 +64,7 @@ while a(4)>200
             dist=sin(angle)*a(1);
             b=pioneer_read_odometry();
             
-            if dist < 300 || dist > 450
+            if dist < 360 || dist > 440
                 break;
             end
             fprintf('valor dist %f e angulo %f na iteracao %d\n',dist,ang, iter)
@@ -87,6 +96,9 @@ while a(4)>200
         
 %         while abs(b(pos))>value-500
         while toc > TEMPO_DE_CORREDOR - 2
+            if num_voltas==4
+                break;
+            end
             a=pioneer_read_sonars();
             b=pioneer_read_odometry();
             d=a(1)^2+a(2)^2-2*a(1)*a(2)*cos(0.7);
@@ -98,10 +110,10 @@ while a(4)>200
                 c=(a(2)^2+a(1)^2-d)/(2*sqrt(d)*a(1));
                 pause(0.2)
                 if c-0.8727<-0.02
-                    fprintf('endireitar para a esquerda\n')
+                    fprintf('endireitar para a direita\n')
                     pioneer_set_controls(sp, ROBOT_VELOCITY_WHILE_FIXING, -2);
                 elseif c-0.8727>0.02
-                    fprintf('endireitar para a DIREITA\n')
+                    fprintf('endireitar para a esquerda\n')
                      pioneer_set_controls(sp, ROBOT_VELOCITY_WHILE_FIXING, 2);
                 end
                 b=pioneer_read_odometry();
@@ -132,8 +144,10 @@ while a(4)>200
                         last_odom=b(2);
                         value=9500+abs(last_odom);
                         pos=2;
+                        TEMPO_DE_CORREDOR = 44;
                     elseif num_voltas==4
                         fprintf('Ultima volta')
+                        
                         last_odom=b(1);
                         value=11000+abs(last_odom);
                         pos=1;
@@ -150,13 +164,13 @@ while a(4)>200
                         c=(a(2)^2+a(1)^2-d)/(2*sqrt(d)*a(1));
                         pause(0.2)
                         if c-0.8727<-0.05
-                            fprintf('endireitar para a esquerda\n')
+                            fprintf('endireitar para a direira\n')
                             pioneer_set_controls(sp, ROBOT_VELOCITY_WHILE_FIXING, -2);
                         elseif c-0.8727>0.05
-                            fprintf('endireitar para a direita\n')
+                            fprintf('endireitar para a esquerda\n')
                             pioneer_set_controls(sp, ROBOT_VELOCITY_WHILE_FIXING, 2);
                         end
-                        if a(1)>300
+                        if a(1)>350
                             fprintf('finito de endireitar dps da curva')
                             break;
                         end
@@ -165,11 +179,17 @@ while a(4)>200
                 end
             end
         end
-        if dist < 300 || dist > 450
+        if num_voltas==4 && toc >TEMPO_DE_CORREDOR-2
+            break;
+        end
+        if dist < 360 || dist > 440
             fprintf('iniciar correcao')
             break;
         end
         
+    end
+    if num_voltas==4 && toc >TEMPO_DE_CORREDOR-2
+        break;
     end
 %     fprintf('off')
 %     if ~isempty(time)
@@ -189,12 +209,12 @@ while a(4)>200
         tempo=tic;
         %             a=pioneer_read_sonars();
         %             b=pioneer_read_odometry();
-        while dist<380 || dist>400
+        while dist<380 || dist>410
             volta_correcao=false;
             b=pioneer_read_odometry();
             pause(0.2)
 %             if abs(b(pos))>value-500
-            if toc > TEMPO_DE_CORREDOR - 2
+            if toc > TEMPO_DE_CORREDOR - 3
                 fprintf('corrigir proximo da curva\n')
 %                 tira_medidas=false;
                 break;
@@ -244,8 +264,8 @@ while a(4)>200
             end
             b=pioneer_read_odometry();
 %             if abs(b(pos))>value-500 
-            if toc > TEMPO_DE_CORREDOR - 2
-                fprintf('curva durante o endireitar')
+            if toc > TEMPO_DE_CORREDOR - 3
+                fprintf('curva durante o endireitar \n')
 %                 tira_medidas=false;
                 break;
 
@@ -258,13 +278,13 @@ while a(4)>200
             c=(a(2)^2+a(1)^2-d)/(2*sqrt(d)*a(1));
             angle=pi-c;
             dist=sin(angle)*a(1);
-            if dist<300
+            if dist<330
                 fprintf('endireitar demasiado proximo parede esquerda')
                 pioneer_set_controls(sp, ROBOT_VELOCITY_WHILE_FIXING, -6);
                 pause(0.35);
                 volta_correcao=true;
                 break;
-            elseif dist>480
+            elseif dist>460
                 fprintf('endireitar demasiado proximo parede direita')
                 pioneer_set_controls(sp, ROBOT_VELOCITY_WHILE_FIXING, 6);
                 pause(0.35);
@@ -276,38 +296,65 @@ while a(4)>200
 pioneer_set_controls(sp,ROBOT_VELOCITY_WHILE_FIXING,0);
 volta_correcao=true;
 end
-    %     else
-    %         a=pioneer_read_sonars();
-    %         pause(0.1)
-    %         d=a(1)^2+a(2)^2-2*a(1)*a(2)*cos(0.7);
-    %         c=(a(2)^2+a(1)^2-d)/(2*sqrt(d)*a(1));
-    %         angle=pi-c;
-    %         dist=sin(angle)*a(1);
-    %         fprintf('dist %f dps da curva \n',dist);
-    %         while dist>500
-    %             pioneer_set_controls(sp,ROBOT_VELOCITY_WHILE_FIXING,-1);
-    %             pause(0.2)
-    %             a=pioneer_read_sonars();
-    %             d=a(1)^2+a(2)^2-2*a(1)*a(2)*cos(0.7);
-    %             c=(a(2)^2+a(1)^2-d)/(2*sqrt(d)*a(1));
-    %             angle=pi-c;
-    %             dist=sin(angle)*a(1);
-    %             fprintf('distancia ao endireitar dps da curva %f\n', dist)
-    %         end
-    %          while abs(c-0.8727)>0.02
-    %             fprintf('inicio endireitar dentro dos limites\n')
-    %             a=pioneer_read_sonars();
-    %             d=a(1)^2+a(2)^2-2*a(1)*a(2)*cos(0.7);
-    %             c=(a(2)^2+a(1)^2-d)/(2*sqrt(d)*a(1));
-    %             pause(0.2)
-    %             pioneer_set_controls(sp,ROBOT_VELOCITY_WHILE_FIXING,1);
-    %          end
-    %          fprintf('fim endireitar dps da curvaaaaaaaa\n')
-    %          pioneer_set_controls(sp,ROBOT_VELOCITY,0);
-    %         flag=true;
-    %     end
+fprintf('SAIUUUUUUUUUUUUUUUUUUU\n')
+a=pioneer_read_sonars();
+% if a(1)>4500 || a(2)>4500
+%     if v>0
+%         pioneer_set_controls(sp, ROBOT_VELOCITY_WHILE_FIXING, -6);
+%         pause(0.8)
+%     else
+%         pioneer_set_controls(sp, ROBOT_VELOCITY_WHILE_FIXING, 6);
+%         pause(0.8)
+%     end
 % end
-% a(7)
-fprintf('saiu')
-pioneer_set_controls(sp,0,0);
-pioneer_close(sp);
+a=pioneer_read_sonars();
+v=-5
+d=a(1)^2+a(2)^2-2*a(1)*a(2)*cos(0.7);
+c=(a(2)^2+a(1)^2-d)/(2*sqrt(d)*a(1));
+pioneer_set_controls(sp, 0, 0);
+% if a(1)>4500 || a(2)>4500
+%     if v>0
+%         pioneer_set_controls(sp, ROBOT_VELOCITY_WHILE_FIXING, -6);
+%         pause(0.8)
+%     else
+%         pioneer_set_controls(sp, ROBOT_VELOCITY_WHILE_FIXING, 6);
+%         pause(0.8)
+%     end
+% end
+last_measure=50000
+count=0
+while abs(c-0.8727)>0.02
+    fprintf('inicio endireitar dentro dos limites %f\n',c)
+    a=pioneer_read_sonars();
+    d=a(1)^2+a(2)^2-2*a(1)*a(2)*cos(0.7);
+    c=(a(2)^2+a(1)^2-d)/(2*sqrt(d)*a(1));
+    pause(0.2)
+    fprintf('SENSORES %f %f \n',a(1), a(2))
+    if a(1)>4500 && a(2)>4500
+        fprintf('endireitar para a esquerda\n')
+        pioneer_set_controls(sp, ROBOT_VELOCITY_WHILE_FIXING, 2);
+    else
+        if c-0.8727<-0.02
+            fprintf('endireitar para a direta\n')
+            pioneer_set_controls(sp, ROBOT_VELOCITY_WHILE_FIXING,- 2);
+        elseif c-0.8727>0.02
+            fprintf('endireitar para a esquerda\n')
+             pioneer_set_controls(sp, ROBOT_VELOCITY_WHILE_FIXING, 2);
+        end
+        if a(4)<1400 && a(5)<1600
+            break;
+        end
+    end
+    a=pioneer_read_sonars();
+    fprintf('%f %f \n',a(4),a(5))
+    if toc > TEMPO_DE_CORREDOR + 2
+        if a(4)<1600 || a(5)<1600 
+            break;
+        end
+    end
+
+end
+pioneer_set_controls(sp, ROBOT_VELOCITY_WHILE_FIXING,0);
+if toc > TEMPO_DE_CORREDOR + 2
+    finito2(sp,c);
+end
