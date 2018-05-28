@@ -9,7 +9,7 @@ if(a(1) < 250)
 % elseif(a(1) > 750)
 %     w = -14;
 else
-    w = 14;
+    w = 15;
 end
 
 if c-0.8727<-0.2
@@ -21,7 +21,7 @@ elseif c-0.8727>0.2
 elseif c-0.8727>0.05
      t = 0.2;
 end
-fprintf('c = %f | conta = %f a(1) = %f\n', c, c-0.8727, a(1))
+fprintf('c = %f | velocidade = %f a(1) = %f\n', c, w, a(1))
 fprintf('t = %f\n', t);
 
 pioneer_set_controls(sp, 250, w);
