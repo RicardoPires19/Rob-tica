@@ -25,7 +25,7 @@ fprintf('c = %f | conta = %f a(1) = %f\n', c, c-0.8727, a(1))
 fprintf('t = %f\n', t);
 
 pioneer_set_controls(sp, 250, w);
-pause(6.25+t)
+pause(6.35+t)
 % tic=start
 % 
 % while true
