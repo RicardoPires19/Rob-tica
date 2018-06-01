@@ -133,7 +133,7 @@ while true
                 end
             end
             
-            if toc > TEMPO_DE_CORREDOR + 1.5
+            if toc > TEMPO_DE_CORREDOR + 1
                 if a(4)<1400 || a(5)<1600
                     fprintf('CURVAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA\n')
                     fprintf('toc = %f', toc)
@@ -147,7 +147,7 @@ while true
                         RIGHT_LIMIT_OUTER = 480;
                         RIGHT_LIMIT_MIDDLE = 430;
                         LEFT_LIMIT = 380;
-                        LEFT_LIMIT_OUTER = 300;
+                        LEFT_LIMIT_OUTER = 350;
                     elseif num_voltas==3
                         fprintf('Num_voltas = 3\n')
                     elseif num_voltas>=4
@@ -225,7 +225,7 @@ while true
             c=(a(2)^2+a(1)^2-d)/(2*sqrt(d)*a(1));
             angle=pi-c;
             dist=sin(angle)*a(1);
-            if dist < LEFT_LIMIT
+            if dist < RIGHT_LIMIT
                 v=-abs(v);
                 pioneer_set_controls(sp,ROBOT_VELOCITY_WHILE_FIXING,v);
             else
