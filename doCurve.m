@@ -1,4 +1,4 @@
-function [] = doCurve(sp, c)
+function [] = doCurve(sp, c, num_voltas)
 
 a = pioneer_read_sonars();
 t = 0;
@@ -21,11 +21,16 @@ elseif c-0.8727>0.2
 elseif c-0.8727>0.05
      t = 0.2;
 end
+
+if(num_voltas == 2)
+    t = -0.25;
+end
+
 fprintf('c = %f | conta = %f a(1) = %f\n', c, c-0.8727, a(1))
 fprintf('t = %f\n', t);
 
 pioneer_set_controls(sp, 250, w);
-pause(6.35+t)
+pause(6.4+t)
 % tic=start
 % 
 % while true

@@ -15,6 +15,7 @@ RIGHT_LIMIT_OUTER = 480;
 RIGHT_LIMIT_MIDDLE = 450;
 LEFT_LIMIT = 380;
 LEFT_LIMIT_OUTER = 300;
+LEFT_LIMIT_EXTREME = 150;
 
 value = 11000;
 
@@ -134,26 +135,29 @@ while true
             end
             
             if toc > TEMPO_DE_CORREDOR + 1
-                if a(4)<1400 || a(5)<1600
+                if a(4)<1500 || a(5)<1600
                     fprintf('CURVAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA\n')
                     fprintf('toc = %f', toc)
-                    doCurve(sp, c)
+                    doCurve(sp, c, num_voltas)
                     tic;
                     num_voltas=num_voltas+1;
                     b=pioneer_read_odometry();
                     if num_voltas==2
                         fprintf('Antigos limites restablecidos\n')
-                        RIGHT_LIMIT = 400;
+                        RIGHT_LIMIT = 410;
                         RIGHT_LIMIT_OUTER = 480;
                         RIGHT_LIMIT_MIDDLE = 430;
-                        LEFT_LIMIT = 380;
-                        LEFT_LIMIT_OUTER = 350;
+                        LEFT_LIMIT = 390;
+                        LEFT_LIMIT_OUTER = 370;
                     elseif num_voltas==3
+                        RIGHT_LIMIT = 450;
+                        RIGHT_LIMIT_MIDDLE = 470;
+                        RIGHT_LIMIT_OUTER = 700;
                         fprintf('Num_voltas = 3\n')
-                    elseif num_voltas>=4
+                    elseif num_voltas>=-3
                         fprintf('Ultima volta!\n')
                     end
-                    
+                    fprintf('NUM_voltas = %d\n', num_voltas)
                     tira_medidas=true;
                     a=pioneer_read_sonars();
                     d=a(1)^2+a(2)^2-2*a(1)*a(2)*cos(0.7);
@@ -231,6 +235,12 @@ while true
             else
                 v=abs(v);
                 pioneer_set_controls(sp,ROBOT_VELOCITY_WHILE_FIXING,v);
+            end
+            if dist < LEFT_LIMIT_EXTREME
+                v=-abs(v);
+                pioneer_set_controls(sp, ROBOT_VELOCITY_WHILE_FIXING, -6);
+                pause(0.35);
+                pioneer_set_controls(sp, ROBOT_VELOCITY_WHILE_FIXING, 0);
             end
             fprintf('FIM DA CORREÇÃO: [ANGLE] %f  [DISTANCE] %f\n',ang, dist)
             stop=tic;
@@ -379,8 +389,9 @@ while true
         pioneer_set_controls(sp, 250, 0);
 
         pause(2)
+        break;
     end
-    break;
+    
 end
 pioneer_set_controls(sp, 0, 0);
 pioneer_close(sp);
