@@ -242,7 +242,7 @@ while true
                 pause(0.35);
                 pioneer_set_controls(sp, ROBOT_VELOCITY_WHILE_FIXING, 0);
             end
-            fprintf('FIM DA CORRE«√O: [ANGLE] %f  [DISTANCE] %f\n',ang, dist)
+            fprintf('FIM DA CORRE√á√ÉO: [ANGLE] %f  [DISTANCE] %f\n',ang, dist)
             stop=tic;
         end
         max=toc(tempo);
